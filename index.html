@@ -1,113 +1,381 @@
 <!DOCTYPE html>
+
 <html lang="pl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Family timeline</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rodzinna oś czasu</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
 <style>
-  :root{--bg:#ffffff;--card:#f5f5f5;--text:#111;--line:#333;--accent:#f39c12}
-  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text);}
-  header.sticky{position:fixed;top:0;left:0;right:0;height:72px;display:flex;align-items:center;justify-content:center;
-    background:var(--bg);z-index:1000;border-bottom:1px solid #e5e7eb;}
-  #theme-toggle{position:absolute;left:16px;top:12px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
-  main{padding-top:92px;max-width:1100px;margin:0 auto;}
-  .timeline{position:relative;padding:20px 0 80px;}
-  .timeline::before{content:'';position:absolute;left:50%;transform:translateX(-50%);width:4px;top:0;bottom:0;background:var(--line);z-index:0}
-  .block{position:relative;z-index:2;margin:48px 0;padding-top:24px;}
-  .marker{position:absolute;left:50%;transform:translateX(-50%);top:0;width:14px;height:14px;border-radius:50%;
-    background:var(--accent);border:3px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,0.05);z-index:3}
-  .year{position:absolute;left:50%;transform:translateX(-50%);top:22px;font-weight:600;color:var(--text)}
-  .card{background:var(--card);border-radius:12px;padding:28px;box-shadow:0 6px 20px rgba(0,0,0,0.06);width:90%;max-width:900px;margin:0 auto;position:relative}
-  /* wedding special */
-  .wedding .card{height:520px;display:flex;justify-content:center;align-items:center}
-  .wedding img{width:80%;max-width:760px;display:block;margin:0 auto;border-radius:15px;}
-  /* grid for other years */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:center;justify-items:center}
-  @media(min-width:768px){ .grid{grid-template-columns:repeat(4,1fr)} }
-  .grid img{width:100%;max-width:220px;border-radius:15px;display:block}
-  /* appear animation */
-  .card {opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease}
-  .card.appear{opacity:1; transform:none}
-  /* dark theme */
-  body.dark{--bg:#0b0b0b;--card:#111214;--text:#efefef;--line:#6b7280}
-  body.dark header.sticky{background:var(--bg);border-bottom-color:#222}
-  /* small tweaks */
-  h1{margin:0;font-size:22px;font-weight:800}
-  .caption{font-size:14px;color:#555}
-</style>
-</head>
-<body>
-<header class="sticky">
-  <button id="theme-toggle" aria-label="Zmiana motywu">🌓</button>
-  <h1>Family timeline</h1>
-</header>
-
-<main>
-  <section id="timeline" class="timeline" aria-label="oś czasu rodzinnej galerii"></section>
-</main>
-
-<script>
-(function(){
-  const members = [
-    {name:'Basia',short:'basia'},
-    {name:'Michal',short:'michal'},
-    {name:'Patrycja',short:'pati'},
-    {name:'Nikodem',short:'niko'}
-  ];
-  const start = 2005, end = 2025;
-  const container = document.getElementById('timeline');
-
-  for(let y=start;y<=end;y++){
-    const block = document.createElement('div');
-    block.className = 'block';
-    const marker = document.createElement('div'); marker.className='marker';
-    const yearLabel = document.createElement('div'); yearLabel.className='year'; yearLabel.textContent = y;
-    block.appendChild(marker);
-    block.appendChild(yearLabel);
-
-    const cardOuter = document.createElement('div');
-    cardOuter.className = 'card ' + (y===2005? 'wedding' : '');
-    // content
-    if(y===2005){
-      const img = document.createElement('img');
-      img.src = 'images/slub.jpg';
-      img.alt = 'Ślub';
-      img.loading = 'lazy';
-      img.style.borderRadius = '15px';
-      cardOuter.appendChild(img);
-    } else {
-      const grid = document.createElement('div'); grid.className='grid';
-      members.forEach(m=>{
-        const img = document.createElement('img');
-        // filename: "YYYY short.jpg"
-        img.src = 'images/' + y + ' ' + m.short + '.jpg';
-        img.alt = m.name + ' ' + y;
-        img.loading = 'lazy';
-        img.style.borderRadius = '15px';
-        grid.appendChild(img);
-      });
-      cardOuter.appendChild(grid);
+    body {
+      scroll-behavior: smooth;
+      scroll-padding-top: 100px;
+      background: url('images/background.jpg') no-repeat center top;
+      background-size: cover;
+      background-attachment: fixed;
     }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background: white;
+      color: black;
+      text-align: center;
+      font-size: 2rem;
+      padding: 1rem;
+      font-weight: bold;
+      z-index: 1000;
+      border-bottom: 2px solid #ccc;
+    }
+    .cd-timeline__container {
+      position: relative;
+      margin: 0 auto;
+      padding: 2rem 0;
+    }
+    .cd-timeline__container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, #333 0%, #999 100%);
+      transform: translateX(-50%);
+      z-index: 0;
+    }
+    .cd-timeline__block {
+      position: relative;
+      margin: 3rem 0;
+    }
+    .cd-timeline__img {
+      position: absolute;
+      left: 50%;
+      background: #f39c12;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      top: 0;
+      transform: translateX(-50%);
+      z-index: 2;
+      border: 3px solid #fff;
+    }
+    .cd-timeline__content {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 1rem;
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+      margin: 0 auto;
+      margin-top: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+    .cd-timeline__content.appear {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .cd-timeline__content h2 {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #222;
+      margin-bottom: 1rem;
+    }
+  </style>
+<style>
+body.dark {
+  background-color: #111;
+  color: #eee;
+}
+body.dark .sticky-header {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border-bottom-color: #444;
+}
+body.dark .cd-timeline__content {
+  background-color: #222 !important;
+  color: #f0f0f0;
+}
+body.dark .cd-timeline__img {
+  background-color: #ffc107;
+  border-color: #111;
+}
 
-    block.appendChild(cardOuter);
-    container.appendChild(block);
-  }
+body.dark {
+  background: url('images/background_dark.jpg') no-repeat center top;
+  background-size: cover;
+  background-attachment: fixed;
+}
 
-  // IntersectionObserver for appear
-  const observer = new IntersectionObserver((entries, obs)=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
-        e.target.classList.add('appear');
-        obs.unobserve(e.target);
-      }
+body.dark, body.dark h1, body.dark h2, body.dark p, body.dark span, body.dark div {
+  color: #ffffff !important;
+}
+</style></head>
+<body class="text-gray-800 bg-white">
+<header class="sticky-header"><button id="theme-toggle" style="margin-right: 1rem; padding: 0.3rem 0.8rem; background: #eee; border-radius: 0.5rem; border: 1px solid #ccc; float: left; font-size: 0.875rem;">🌓</button>Rodzinna oś czasu</header>
+<section class="cd-timeline">
+<div class="cd-timeline__container">
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content wedding-visible" style="height: 700px; display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 900px; margin: 0 auto; padding: 20px 20px 20px; background-color: #f4f4f4; position: center;">
+<h2 style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-size: 24px; z-index: 10;">2005</h2>
+<div class="grid grid-cols-1 md:grid-cols-1 gap-1 w-full justify-items-center">
+<img alt="Ślub" src="images/slub.jpg" style="width: 80%; height: auto; border-radius: 15px; "/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2006</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2006" loading="lazy" src="images/2006 basia.jpg" style="border-radius: 15px;"/>
+<img alt="michal 2006" loading="lazy" src="images/2006 michal.jpg" style="border-radius: 15px;"/>
+<img alt="pati 2006" loading="lazy" src="images/2006 pati.jpg" style="border-radius: 15px;"/>
+<img alt="niko 2006" loading="lazy" src="images/2006 niko.jpg" style="border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2007</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2007" loading="lazy" src="images/2007 basia.jpg" style="border-radius: 15px;"/>
+<img alt="michal 2007" loading="lazy" src="images/2007 michal.jpg" style="border-radius: 15px;"/>
+<img alt="pati 2007" loading="lazy" src="images/2007 pati.jpg" style="border-radius: 15px;"/>
+<img alt="niko 2007" loading="lazy" src="images/2007 niko.jpg" style="border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2008</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2008" loading="lazy" src="images/2008 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2008" loading="lazy" src="images/2008 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2008" loading="lazy" src="images/2008 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2008" loading="lazy" src="images/2008 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2009</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2009" loading="lazy" src="images/2009 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2009" loading="lazy" src="images/2009 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2009" loading="lazy" src="images/2009 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2009" loading="lazy" src="images/2009 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2010</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2010" loading="lazy" src="images/2010 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2010" loading="lazy" src="images/2010 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2010" loading="lazy" src="images/2010 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2010" loading="lazy" src="images/2010 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2011</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2011" loading="lazy" src="images/2011 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2011" loading="lazy" src="images/2011 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2011" loading="lazy" src="images/2011 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2011" loading="lazy" src="images/2011 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2012</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2012" loading="lazy" src="images/2012 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2012" loading="lazy" src="images/2012 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2012" loading="lazy" src="images/2012 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2012" loading="lazy" src="images/2012 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2013</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2013" loading="lazy" src="images/2013 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2013" loading="lazy" src="images/2013 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2013" loading="lazy" src="images/2013 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2013" loading="lazy" src="images/2013 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2014</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2014" loading="lazy" src="images/2014 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2014" loading="lazy" src="images/2014 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2014" loading="lazy" src="images/2014 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2014" loading="lazy" src="images/2014 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2015</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2015" loading="lazy" src="images/2015 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2015" loading="lazy" src="images/2015 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2015" loading="lazy" src="images/2015 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2015" loading="lazy" src="images/2015 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2016</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2016" loading="lazy" src="images/2016 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2016" loading="lazy" src="images/2016 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2016" loading="lazy" src="images/2016 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2016" loading="lazy" src="images/2016 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2017</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2017" loading="lazy" src="images/2017 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2017" loading="lazy" src="images/2017 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2017" loading="lazy" src="images/2017 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2017" loading="lazy" src="images/2017 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2018</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2018" loading="lazy" src="images/2018 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2018" loading="lazy" src="images/2018 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2018" loading="lazy" src="images/2018 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2018" loading="lazy" src="images/2018 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2019</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2019" loading="lazy" src="images/2019 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2019" loading="lazy" src="images/2019 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2019" loading="lazy" src="images/2019 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2019" loading="lazy" src="images/2019 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2020</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2020" loading="lazy" src="images/2020 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2020" loading="lazy" src="images/2020 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2020" loading="lazy" src="images/2020 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2020" loading="lazy" src="images/2020 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2021</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2021" loading="lazy" src="images/2021 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2021" loading="lazy" src="images/2021 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2021" loading="lazy" src="images/2021 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2021" loading="lazy" src="images/2021 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2022</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2022" loading="lazy" src="images/2022 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2022" loading="lazy" src="images/2022 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2022" loading="lazy" src="images/2022 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2022" loading="lazy" src="images/2022 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2023</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2023" loading="lazy" src="images/2023 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2023" loading="lazy" src="images/2023 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2023" loading="lazy" src="images/2023 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2023" loading="lazy" src="images/2023 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+<div class="cd-timeline__block">
+<div class="cd-timeline__img"></div>
+<div class="cd-timeline__content" style="">
+<h2 style="">2024</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full justify-items-center">
+<img alt="basia 2024" loading="lazy" src="images/2024 basia.jpg" style=" border-radius: 15px;"/>
+<img alt="michal 2024" loading="lazy" src="images/2024 michal.jpg" style=" border-radius: 15px;"/>
+<img alt="pati 2024" loading="lazy" src="images/2024 pati.jpg" style=" border-radius: 15px;"/>
+<img alt="niko 2024" loading="lazy" src="images/2024 niko.jpg" style=" border-radius: 15px;"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const faders = document.querySelectorAll('.cd-timeline__content');
+      const appearOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px"
+      };
+      const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("appear");
+          observer.unobserve(entry.target);
+        });
+      }, appearOptions);
+      faders.forEach(fader => appearOnScroll.observe(fader));
     });
-  }, {threshold:0.12});
-  document.querySelectorAll('.card').forEach(c=>observer.observe(c));
-
-  // theme toggle
-  const btn = document.getElementById('theme-toggle');
-  btn.addEventListener('click', ()=> document.body.classList.toggle('dark'));
-})();
-</script>
-</body>
+  </script>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  document.body.classList.toggle("dark");
+});
+</script></body>
 </html>
