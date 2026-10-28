@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rodzinna oś czasu</title>
+<style>
+  :root{--bg:#ffffff;--card:#f5f5f5;--text:#111;--line:#333;--accent:#f39c12}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text);}
+  header.sticky{position:fixed;top:0;left:0;right:0;height:72px;display:flex;align-items:center;justify-content:center;
+    background:var(--bg);z-index:1000;border-bottom:1px solid #e5e7eb;}
+  #theme-toggle{position:absolute;left:16px;top:12px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
+  main{padding-top:92px;max-width:1100px;margin:0 auto;}
+  .timeline{position:relative;padding:20px 0 80px;}
+  .timeline::before{content:'';position:absolute;left:50%;transform:translateX(-50%);width:4px;top:0;bottom:0;background:var(--line);z-index:0}
+  .block{position:relative;z-index:2;margin:48px 0;padding-top:24px;}
+  .marker{position:absolute;left:50%;transform:translateX(-50%);top:0;width:14px;height:14px;border-radius:50%;
+    background:var(--accent);border:3px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,0.05);z-index:3}
+  .year{position:absolute;left:50%;transform:translateX(-50%);top:22px;font-weight:600;color:var(--text)}
+  .card{background:var(--card);border-radius:12px;padding:28px;box-shadow:0 6px 20px rgba(0,0,0,0.06);width:90%;max-width:900px;margin:0 auto;position:relative}
+  /* wedding special */
+  .wedding .card{height:520px;display:flex;justify-content:center;align-items:center}
+  .wedding img{width:80%;max-width:760px;display:block;margin:0 auto;border-radius:15px;}
+  /* grid for other years */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:center;justify-items:center}
+  @media(min-width:768px){ .grid{grid-template-columns:repeat(4,1fr)} }
+  .grid img{width:100%;max-width:220px;border-radius:15px;display:block}
+  /* appear animation */
+  .card {opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease}
+  .card.appear{opacity:1; transform:none}
+  /* dark theme */
+  body.dark{--bg:#0b0b0b;--card:#111214;--text:#efefef;--line:#6b7280}
+  body.dark header.sticky{background:var(--bg);border-bottom-color:#222}
+  /* small tweaks */
+  h1{margin:0;font-size:22px;font-weight:800}
+  .caption{font-size:14px;color:#555}
+</style>
+</head>
+<body>
+<header class="sticky">
+  <button id="theme-toggle" aria-label="Zmiana motywu">🌓</button>
+  <h1>Rodzinna oś czasu</h1>
+</header>
+
+<main>
+  <section id="timeline" class="timeline" aria-label="oś czasu rodzinnej galerii"></section>
+</main>
+
+<script>
+(function(){
+  const members = [
+    {name:'Basia',short:'basia'},
+    {name:'Michal',short:'michal'},
+    {name:'Patrycja',short:'pati'},
+    {name:'Nikodem',short:'niko'}
+  ];
+  const start = 2005, end = 2025;
+  const container = document.getElementById('timeline');
+
+  for(let y=start;y<=end;y++){
+    const block = document.createElement('div');
+    block.className = 'block';
+    const marker = document.createElement('div'); marker.className='marker';
+    const yearLabel = document.createElement('div'); yearLabel.className='year'; yearLabel.textContent = y;
+    block.appendChild(marker);
+    block.appendChild(yearLabel);
+
+    const cardOuter = document.createElement('div');
+    cardOuter.className = 'card ' + (y===2005? 'wedding' : '');
+    // content
+    if(y===2005){
+      const img = document.createElement('img');
+      img.src = 'images/slub.jpg';
+      img.alt = 'Ślub';
+      img.loading = 'lazy';
+      img.style.borderRadius = '15px';
+      cardOuter.appendChild(img);
+    } else {
+      const grid = document.createElement('div'); grid.className='grid';
+      members.forEach(m=>{
+        const img = document.createElement('img');
+        // filename: "YYYY short.jpg"
+        img.src = 'images/' + y + ' ' + m.short + '.jpg';
+        img.alt = m.name + ' ' + y;
+        img.loading = 'lazy';
+        img.style.borderRadius = '15px';
+        grid.appendChild(img);
+      });
+      cardOuter.appendChild(grid);
+    }
+
+    block.appendChild(cardOuter);
+    container.appendChild(block);
+  }
+
+  // IntersectionObserver for appear
+  const observer = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('appear');
+        obs.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.12});
+  document.querySelectorAll('.card').forEach(c=>observer.observe(c));
+
+  // theme toggle
+  const btn = document.getElementById('theme-toggle');
+  btn.addEventListener('click', ()=> document.body.classList.toggle('dark'));
+})();
+</script>
+</body>
+</html>
