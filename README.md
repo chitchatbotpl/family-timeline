@@ -1,2 +1,2 @@
 # time
-time - the page to show how time affects us
+time - the page to shows how time affects us
