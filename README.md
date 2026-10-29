@@ -1,2 +1,2 @@
-# time
-time - the page to show how time affects us
+# family timeline
+the page that shows how the time affects us
